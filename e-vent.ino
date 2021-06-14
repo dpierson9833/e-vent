@@ -52,23 +52,23 @@ using namespace utils;
 
 // Cycle parameters
 unsigned long cycleCount = 0;
-float tCycleTimer;     // Absolute time (s) at start of each breathing cycle
-float tIn;             // Calculated time (s) since tCycleTimer for end of IN_STATE
-float tHoldIn;         // Calculated time (s) since tCycleTimer for end of HOLD_IN_STATE
-float tEx;             // Calculated time (s) since tCycleTimer for end of EX_STATE
-float tPeriod;         // Calculated time (s) since tCycleTimer for end of cycle
-float tPeriodActual;   // Actual time (s) since tCycleTimer at end of cycle (for logging)
-float tLoopTimer;      // Absolute time (s) at start of each control loop iteration
-float tLoopBuffer;     // Amount of time (s) left at end of each loop
+// float tCycleTimer;     // Absolute time (s) at start of each breathing cycle
+// float tIn;             // Calculated time (s) since tCycleTimer for end of IN_STATE
+// float tHoldIn;         // Calculated time (s) since tCycleTimer for end of HOLD_IN_STATE
+// float tEx;             // Calculated time (s) since tCycleTimer for end of EX_STATE
+// float tPeriod;         // Calculated time (s) since tCycleTimer for end of cycle
+// float tPeriodActual;   // Actual time (s) since tCycleTimer at end of cycle (for logging)
+// float tLoopTimer;      // Absolute time (s) at start of each control loop iteration
+// float tLoopBuffer;     // Amount of time (s) left at end of each loop
 
-// States
-States state;
-bool enteringState;
-float tStateTimer;
+// // States
+// States state;
+// bool enteringState;
+// float tStateTimer;
 
-// Roboclaw
-RoboClaw roboclaw(&Serial3, 10000);
-int motorCurrent, motorPosition = 0;
+// // Roboclaw
+// RoboClaw roboclaw(&Serial3, 10000);
+// int motorCurrent, motorPosition = 0;
 
 // LCD Screen
 LiquidCrystal lcd(LCD_RS_PIN, LCD_EN_PIN, LCD_D4_PIN, dLCD_D5_PIN, LCD_D6_PIN, LCD_D7_PIN);
@@ -78,31 +78,31 @@ display::Display displ(&lcd, AC_MIN);
 alarms::AlarmManager alarm(BEEPER_PIN, SNOOZE_PIN, LED_ALARM_PIN, &displ, &cycleCount);
 
 // Pressure
-Pressure pressureReader(PRESS_SENSE_PIN);
+// Pressure pressureReader(PRESS_SENSE_PIN);
 
-// Buttons
-buttons::PressHoldButton offButton(OFF_PIN, 2000);
-buttons::DebouncedButton confirmButton(CONFIRM_PIN);
+// // Buttons
+// buttons::PressHoldButton offButton(OFF_PIN, 2000);
+// buttons::DebouncedButton confirmButton(CONFIRM_PIN);
 
-// Logger
-logging::Logger logger(true/*Serial*/, false/*SD*/, false/*labels*/, ",\t"/*delim*/);
+// // Logger
+// logging::Logger logger(true/*Serial*/, false/*SD*/, false/*labels*/, ",\t"/*delim*/);
 
 // Knobs
-struct Knobs {
-  int volume();  // Tidal volume
-  int bpm();     // Respiratory rate
-  float ie();    // Inhale/exhale ratio
-  float ac();    // Assist control trigger sensitivity
-  SafeKnob<int> volume_ = SafeKnob<int>(&displ, display::VOLUME, CONFIRM_PIN, &alarm, VOL_RES);
-  SafeKnob<int> bpm_ = SafeKnob<int>(&displ, display::BPM, CONFIRM_PIN, &alarm, BPM_RES);
-  SafeKnob<float> ie_ = SafeKnob<float>(&displ, display::IE_RATIO, CONFIRM_PIN, &alarm, IE_RES);
-  SafeKnob<float> ac_ = SafeKnob<float>(&displ, display::AC_TRIGGER, CONFIRM_PIN, &alarm, AC_RES);
-  void begin();
-  void update();
-} knobs;
+// struct Knobs {
+//   int volume();  // Tidal volume
+//   int bpm();     // Respiratory rate
+//   float ie();    // Inhale/exhale ratio
+//   float ac();    // Assist control trigger sensitivity
+//   SafeKnob<int> volume_ = SafeKnob<int>(&displ, display::VOLUME, CONFIRM_PIN, &alarm, VOL_RES);
+//   SafeKnob<int> bpm_ = SafeKnob<int>(&displ, display::BPM, CONFIRM_PIN, &alarm, BPM_RES);
+//   SafeKnob<float> ie_ = SafeKnob<float>(&displ, display::IE_RATIO, CONFIRM_PIN, &alarm, IE_RES);
+//   SafeKnob<float> ac_ = SafeKnob<float>(&displ, display::AC_TRIGGER, CONFIRM_PIN, &alarm, AC_RES);
+//   void begin();
+//   void update();
+// } knobs;
 
 // Assist control
-bool patientTriggered = false;
+// bool patientTriggered = false;
 
 
 ///////////////////////
@@ -130,30 +130,37 @@ void setup() {
   Serial.begin(SERIAL_BAUD_RATE);
   while(!Serial);
 
-  if (DEBUG) {
-    setState(DEBUG_STATE);
-  } else {
-    setState(PREHOME_STATE);  // Initial state
-  }
+  // if (DEBUG) {
+  //   setState(DEBUG_STATE);
+  // } else {
+  //   setState(PREHOME_STATE);  // Initial state
+  // }
 
   // Wait for the roboclaw to boot up
-  delay(1000);
+  // delay(1000);
   
   //Initialize
-  pinMode(HOME_PIN, INPUT_PULLUP);  // Pull up the limit switch
-  setupLogger();
+  // pinMode(HOME_PIN, INPUT_PULLUP);  // Pull up the limit switch
+  // setupLogger();
+  
   alarm.begin();
   displ.begin();
-  offButton.begin();
-  confirmButton.begin();
-  knobs.begin();
-  tCycleTimer = now();
 
-  roboclaw.begin(ROBOCLAW_BAUD);
-  roboclaw.SetM1MaxCurrent(ROBOCLAW_ADDR, ROBOCLAW_MAX_CURRENT);
-  roboclaw.SetM1VelocityPID(ROBOCLAW_ADDR, VKP, VKI, VKD, QPPS);
-  roboclaw.SetM1PositionPID(ROBOCLAW_ADDR, PKP, PKI, PKD, KI_MAX, DEADZONE, MIN_POS, MAX_POS);
-  roboclaw.SetEncM1(ROBOCLAW_ADDR, 0);  // Zero the encoder
+  //alarm.lowPressure(1);
+  //alarm.update();
+  
+  //test code
+
+  // offButton.begin();
+  // confirmButton.begin();
+  // knobs.begin();
+  // tCycleTimer = now();
+
+  // roboclaw.begin(ROBOCLAW_BAUD);
+  // roboclaw.SetM1MaxCurrent(ROBOCLAW_ADDR, ROBOCLAW_MAX_CURRENT);
+  // roboclaw.SetM1VelocityPID(ROBOCLAW_ADDR, VKP, VKI, VKD, QPPS);
+  // roboclaw.SetM1PositionPID(ROBOCLAW_ADDR, PKP, PKI, PKD, KI_MAX, DEADZONE, MIN_POS, MAX_POS);
+  // roboclaw.SetEncM1(ROBOCLAW_ADDR, 0);  // Zero the encoder
 }
 
 //////////////////
@@ -161,224 +168,226 @@ void setup() {
 //////////////////
 
 void loop() {
-  if (DEBUG) {
-    if (Serial.available() > 0) {
-      setState((States) Serial.parseInt());
-      while(Serial.available() > 0) Serial.read();
-    }
-  }
+  String msg = "fuck you:";
+  displ.setAlarmText(msg);
+  // if (DEBUG) {
+  //   if (Serial.available() > 0) {
+  //     setState((States) Serial.parseInt());
+  //     while(Serial.available() > 0) Serial.read();
+  //   }
+  // }
 
   // All States
-  tLoopTimer = now();  // Start the loop timer
-  logger.update();
-  knobs.update();
-  calculateWaveform();
-  readEncoder(roboclaw, motorPosition);  // TODO handle invalid reading
-  readMotorCurrent(roboclaw, motorCurrent);
-  pressureReader.read();
-  handleErrors();
-  alarm.update();
-  displ.update();
-  offButton.update();
+  // tLoopTimer = now();  // Start the loop timer
+  // logger.update();
+  // knobs.update();
+  // calculateWaveform();
+  // readEncoder(roboclaw, motorPosition);  // TODO handle invalid reading
+  // readMotorCurrent(roboclaw, motorCurrent);
+  // pressureReader.read();
+  // handleErrors();
+  // alarm.update();
+  // displ.update();
+  // offButton.update();
 
-  if (offButton.wasHeld()) {
-    goToPositionByDur(roboclaw, BAG_CLEAR_POS, motorPosition, MAX_EX_DURATION);
-    setState(OFF_STATE);
-    alarm.allOff();
-  }
+  // if (offButton.wasHeld()) {
+  //   goToPositionByDur(roboclaw, BAG_CLEAR_POS, motorPosition, MAX_EX_DURATION);
+  //   setState(OFF_STATE);
+  //   alarm.allOff();
+  // }
   
   // State Machine
-  switch (state) {
+//   switch (state) {
 
-    case DEBUG_STATE:
-      // Stop motor
-      roboclaw.ForwardM1(ROBOCLAW_ADDR, 0);
-      break;
+//     case DEBUG_STATE:
+//       // Stop motor
+//       roboclaw.ForwardM1(ROBOCLAW_ADDR, 0);
+//       break;
 
-    case OFF_STATE: 
-      alarm.turningOFF(now() - tStateTimer < TURNING_OFF_DURATION);
-      if (confirmButton.is_LOW()) {
-        setState(PREHOME_STATE);
-        alarm.turningOFF(false);
-      }
-      break;
+//     case OFF_STATE: 
+//       alarm.turningOFF(now() - tStateTimer < TURNING_OFF_DURATION);
+//       if (confirmButton.is_LOW()) {
+//         setState(PREHOME_STATE);
+//         alarm.turningOFF(false);
+//       }
+//       break;
   
-    case IN_STATE:
-      if (enteringState) {
-        enteringState = false;
-        const float tNow = now();
-        tPeriodActual = tNow - tCycleTimer;
-        tCycleTimer = tNow;  // The cycle begins at the start of inspiration
-        goToPositionByDur(roboclaw, volume2ticks(knobs.volume()), motorPosition, tIn);
-        cycleCount++;
-      }
+//     case IN_STATE:
+//       if (enteringState) {
+//         enteringState = false;
+//         const float tNow = now();
+//         tPeriodActual = tNow - tCycleTimer;
+//         tCycleTimer = tNow;  // The cycle begins at the start of inspiration
+//         goToPositionByDur(roboclaw, volume2ticks(knobs.volume()), motorPosition, tIn);
+//         cycleCount++;
+//       }
 
-      if (now() - tCycleTimer > tIn) {
-        setState(HOLD_IN_STATE);
-      }
-      break;
+//       if (now() - tCycleTimer > tIn) {
+//         setState(HOLD_IN_STATE);
+//       }
+//       break;
   
-    case HOLD_IN_STATE:
-      if (enteringState) {
-        enteringState = false;
-      }
-      if (now() - tCycleTimer > tHoldIn) {
-        pressureReader.set_plateau();
-        setState(EX_STATE);
-      }
-      break;
+//     case HOLD_IN_STATE:
+//       if (enteringState) {
+//         enteringState = false;
+//       }
+//       if (now() - tCycleTimer > tHoldIn) {
+//         pressureReader.set_plateau();
+//         setState(EX_STATE);
+//       }
+//       break;
   
-    case EX_STATE:
-      if (enteringState) {
-        enteringState = false;
-        goToPositionByDur(roboclaw, BAG_CLEAR_POS, motorPosition, tEx - (now() - tCycleTimer));
-      }
+//     case EX_STATE:
+//       if (enteringState) {
+//         enteringState = false;
+//         goToPositionByDur(roboclaw, BAG_CLEAR_POS, motorPosition, tEx - (now() - tCycleTimer));
+//       }
 
-      if (abs(motorPosition - BAG_CLEAR_POS) < BAG_CLEAR_TOL) {
-        setState(PEEP_PAUSE_STATE);
-      }
-      break;
+//       if (abs(motorPosition - BAG_CLEAR_POS) < BAG_CLEAR_TOL) {
+//         setState(PEEP_PAUSE_STATE);
+//       }
+//       break;
 
-    case PEEP_PAUSE_STATE:
-      if (enteringState) {
-        enteringState = false;
-      }
+//     case PEEP_PAUSE_STATE:
+//       if (enteringState) {
+//         enteringState = false;
+//       }
       
-      if (now() - tCycleTimer > tEx + MIN_PEEP_PAUSE) {
-        pressureReader.set_peep();
+//       if (now() - tCycleTimer > tEx + MIN_PEEP_PAUSE) {
+//         pressureReader.set_peep();
         
-        setState(HOLD_EX_STATE);
-      }
-      break;
+//         setState(HOLD_EX_STATE);
+//       }
+//       break;
 
-    case HOLD_EX_STATE:
-      if (enteringState) {
-        enteringState = false;
-      }
+//     case HOLD_EX_STATE:
+//       if (enteringState) {
+//         enteringState = false;
+//       }
 
-      // Check if patient triggers inhale
-      patientTriggered = pressureReader.get() < (pressureReader.peep() - knobs.ac()) 
-          && knobs.ac() > AC_MIN;
+//       // Check if patient triggers inhale
+//       patientTriggered = pressureReader.get() < (pressureReader.peep() - knobs.ac()) 
+//           && knobs.ac() > AC_MIN;
 
-      if (patientTriggered || now() - tCycleTimer > tPeriod) {
-        if (!patientTriggered) pressureReader.set_peep();  // Set peep again if time triggered
-        pressureReader.set_peak_and_reset();
-        displ.writePeakP(round(pressureReader.peak()));
-        displ.writePEEP(round(pressureReader.peep()));
-        displ.writePlateauP(round(pressureReader.plateau()));
-        setState(IN_STATE);
-      }
-      break;
+//       if (patientTriggered || now() - tCycleTimer > tPeriod) {
+//         if (!patientTriggered) pressureReader.set_peep();  // Set peep again if time triggered
+//         pressureReader.set_peak_and_reset();
+//         displ.writePeakP(round(pressureReader.peak()));
+//         displ.writePEEP(round(pressureReader.peep()));
+//         displ.writePlateauP(round(pressureReader.plateau()));
+//         setState(IN_STATE);
+//       }
+//       break;
 
-    case PREHOME_STATE:
-      if (enteringState) {
-        enteringState = false;
-        roboclaw.BackwardM1(ROBOCLAW_ADDR, HOMING_VOLTS);
-      }
+//     case PREHOME_STATE:
+//       if (enteringState) {
+//         enteringState = false;
+//         roboclaw.BackwardM1(ROBOCLAW_ADDR, HOMING_VOLTS);
+//       }
 
-      if (homeSwitchPressed()) {
-        setState(HOMING_STATE);
-      }
-      break;
+//       if (homeSwitchPressed()) {
+//         setState(HOMING_STATE);
+//       }
+//       break;
 
-    case HOMING_STATE:
-      if (enteringState) {
-        enteringState = false;
-        roboclaw.ForwardM1(ROBOCLAW_ADDR, HOMING_VOLTS);
-      }
+//     case HOMING_STATE:
+//       if (enteringState) {
+//         enteringState = false;
+//         roboclaw.ForwardM1(ROBOCLAW_ADDR, HOMING_VOLTS);
+//       }
       
-      if (!homeSwitchPressed()) {
-        roboclaw.ForwardM1(ROBOCLAW_ADDR, 0);
-        delay(HOMING_PAUSE * 1000);  // Wait for things to settle
-        roboclaw.SetEncM1(ROBOCLAW_ADDR, 0);  // Zero the encoder
-        setState(IN_STATE);
-      }
-      break;
-  }
+//       if (!homeSwitchPressed()) {
+//         roboclaw.ForwardM1(ROBOCLAW_ADDR, 0);
+//         delay(HOMING_PAUSE * 1000);  // Wait for things to settle
+//         roboclaw.SetEncM1(ROBOCLAW_ADDR, 0);  // Zero the encoder
+//         setState(IN_STATE);
+//       }
+//       break;
+//   }
 
-  // Add a delay if there's still time in the loop period
-  tLoopBuffer = max(0, tLoopTimer + LOOP_PERIOD - now());
-  delay(tLoopBuffer*1000.0);
+//   // Add a delay if there's still time in the loop period
+//   tLoopBuffer = max(0, tLoopTimer + LOOP_PERIOD - now());
+//   delay(tLoopBuffer*1000.0);
 }
 
 
-/////////////////
-// Definitions //
-/////////////////
+// /////////////////
+// // Definitions //
+// /////////////////
 
-void Knobs::begin() {
-  volume_.begin(&readVolume);
-  bpm_.begin(&readBpm);
-  ie_.begin(&readIeRatio);
-  ac_.begin(&readAc);
-}
+// void Knobs::begin() {
+//   volume_.begin(&readVolume);
+//   bpm_.begin(&readBpm);
+//   ie_.begin(&readIeRatio);
+//   ac_.begin(&readAc);
+// }
 
-void Knobs::update() {
-  volume_.update();
-  bpm_.update();
-  ie_.update();
-  ac_.update();
-}
+// void Knobs::update() {
+//   volume_.update();
+//   bpm_.update();
+//   ie_.update();
+//   ac_.update();
+// }
 
-inline int Knobs::volume() { return volume_.read(); }
-inline int Knobs::bpm() { return bpm_.read(); }
-inline float Knobs::ie() { return ie_.read(); }
-inline float Knobs::ac() { return ac_.read(); }
+// inline int Knobs::volume() { return volume_.read(); }
+// inline int Knobs::bpm() { return bpm_.read(); }
+// inline float Knobs::ie() { return ie_.read(); }
+// inline float Knobs::ac() { return ac_.read(); }
 
-void setState(States newState) {
-  enteringState = true;
-  state = newState;
-  tStateTimer = now();
-}
+// void setState(States newState) {
+//   enteringState = true;
+//   state = newState;
+//   tStateTimer = now();
+// }
 
-void calculateWaveform() {
-  tPeriod = 60.0 / knobs.bpm();  // seconds in each breathing cycle period
-  tHoldIn = tPeriod / (1 + knobs.ie());
-  tIn = tHoldIn - HOLD_IN_DURATION;
-  tEx = min(tHoldIn + MAX_EX_DURATION, tPeriod - MIN_PEEP_PAUSE);
-}
+// void calculateWaveform() {
+//   tPeriod = 60.0 / knobs.bpm();  // seconds in each breathing cycle period
+//   tHoldIn = tPeriod / (1 + knobs.ie());
+//   tIn = tHoldIn - HOLD_IN_DURATION;
+//   tEx = min(tHoldIn + MAX_EX_DURATION, tPeriod - MIN_PEEP_PAUSE);
+// }
 
-void handleErrors() {
-  // Pressure alarms
-  const bool over_pressure = pressureReader.get() >= MAX_PRESSURE;
-  alarm.highPressure(over_pressure);
-  if (over_pressure) setState(EX_STATE);
+// void handleErrors() {
+//   // Pressure alarms
+//   const bool over_pressure = pressureReader.get() >= MAX_PRESSURE;
+//   alarm.highPressure(over_pressure);
+//   if (over_pressure) setState(EX_STATE);
 
-  // These pressure alarms only make sense after homing 
-  if (enteringState && state == IN_STATE) {
-    alarm.badPlateau(pressureReader.peak() - pressureReader.plateau() > MAX_RESIST_PRESSURE);
-    alarm.lowPressure(pressureReader.plateau() < MIN_PLATEAU_PRESSURE);
-    alarm.noTidalPres(pressureReader.peak() - pressureReader.peep() < MIN_TIDAL_PRESSURE);
-  }
+//   // These pressure alarms only make sense after homing 
+//   if (enteringState && state == IN_STATE) {
+//     alarm.badPlateau(pressureReader.peak() - pressureReader.plateau() > MAX_RESIST_PRESSURE);
+//     alarm.lowPressure(pressureReader.plateau() < MIN_PLATEAU_PRESSURE);
+//     alarm.noTidalPres(pressureReader.peak() - pressureReader.peep() < MIN_TIDAL_PRESSURE);
+//   }
 
-  // Check if desired volume was reached
-  if (enteringState && state == EX_STATE) {
-    alarm.unmetVolume(knobs.volume() - ticks2volume(motorPosition) > VOLUME_ERROR_THRESH);
-  }
+//   // Check if desired volume was reached
+//   if (enteringState && state == EX_STATE) {
+//     alarm.unmetVolume(knobs.volume() - ticks2volume(motorPosition) > VOLUME_ERROR_THRESH);
+//   }
 
-  // Check if maximum motor current was exceeded
-  if (motorCurrent >= MAX_MOTOR_CURRENT) {
-    setState(EX_STATE);
-    alarm.overCurrent(true);
-  } else {
-    alarm.overCurrent(false);
-  }
+//   // Check if maximum motor current was exceeded
+//   if (motorCurrent >= MAX_MOTOR_CURRENT) {
+//     setState(EX_STATE);
+//     alarm.overCurrent(true);
+//   } else {
+//     alarm.overCurrent(false);
+//   }
 
-  // Check if we've gotten stuck in EX_STATE (mechanical cycle didn't finsih)
-  alarm.mechanicalFailure(state == EX_STATE && now() - tCycleTimer > tPeriod + MECHANICAL_TIMEOUT);
-}
+//   // Check if we've gotten stuck in EX_STATE (mechanical cycle didn't finsih)
+//   alarm.mechanicalFailure(state == EX_STATE && now() - tCycleTimer > tPeriod + MECHANICAL_TIMEOUT);
+// }
 
-void setupLogger() {
-  logger.addVar("Time", &tLoopTimer);
-  logger.addVar("CycleStart", &tCycleTimer);
-  logger.addVar("State", (int*)&state);
-  logger.addVar("Pos", &motorPosition, 3);
-  logger.addVar("Pressure", &pressureReader.get(), 6);
-  // logger.addVar("Period", &tPeriodActual);
-  // logger.addVar("tLoopBuffer", &tLoopBuffer, 6, 4);
-  // logger.addVar("Current", &motorCurrent, 3);
-  // logger.addVar("Peep", &pressureReader.peep(), 6);
-  // logger.addVar("HighPresAlarm", &alarm.getHighPressure());
-  // begin called after all variables added to include them all in the header
-  logger.begin(&Serial, SD_SELECT);
-}
+// void setupLogger() {
+//   logger.addVar("Time", &tLoopTimer);
+//   logger.addVar("CycleStart", &tCycleTimer);
+//   logger.addVar("State", (int*)&state);
+//   logger.addVar("Pos", &motorPosition, 3);
+//   logger.addVar("Pressure", &pressureReader.get(), 6);
+//   // logger.addVar("Period", &tPeriodActual);
+//   // logger.addVar("tLoopBuffer", &tLoopBuffer, 6, 4);
+//   // logger.addVar("Current", &motorCurrent, 3);
+//   // logger.addVar("Peep", &pressureReader.peep(), 6);
+//   // logger.addVar("HighPresAlarm", &alarm.getHighPressure());
+//   // begin called after all variables added to include them all in the header
+//   logger.begin(&Serial, SD_SELECT);
+// }

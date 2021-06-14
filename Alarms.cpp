@@ -167,7 +167,7 @@ void AlarmManager::begin() {
 
 void AlarmManager::update() {
   displ_->setAlarmText(getText());
-  AlarmLevel highest_level = getHighestLevel();
+  AlarmLevel highest_level = EMERGENCY; //getHighestLevel();
   beeper_.update(highest_level);
   if (highest_level > NO_ALARM) {
     digitalWrite(led_pin_, led_pulse_.read() ? HIGH : LOW);
